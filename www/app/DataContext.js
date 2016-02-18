@@ -163,6 +163,7 @@ Conference.dataContext = (function ($) {
         tx.executeSql('insert into	venues (_id, name, latitude, longitude) values (2,	\'Arts Centre\',	\'52.415574\', \'-4.063021\')', [], insertSuccess, errorDB);
         tx.executeSql('insert into	venues (_id, name, latitude, longitude) values (3,	\'Geography Tower\', 	\'52.416706\', \'-4.066612\')', [], insertSuccess, errorDB);
         tx.executeSql('insert into	venues (_id, name, latitude, longitude) values (4,	\'Hugh Owen\',	\'52.415875\', \'-4.063686\')', [], insertSuccess, errorDB);
+      //  tx.executeSql('SELECT * FROM sessions WHERE sessions.dayid = 1 ORDER BY sessions.starttime ASC', [], selectSuccess, errorDB);
     }
 
     var createSuccess = function (tx, results) {
@@ -171,6 +172,10 @@ Conference.dataContext = (function ($) {
 
     var insertSuccess = function (tx, results) {
         console.log("Insert ID = " + results.insertId);
+    }
+
+    var selectSuccess = function (tx, results) {
+        console.log("Selected");
     }
 
     var successPopulate = function () {
@@ -222,6 +227,17 @@ Conference.dataContext = (function ($) {
 
         // **ENTER CODE HERE** TO EXECUTE SQL AND DEAL WITH ANY ERRORS
         // ON SUCCESS YOU SHOULD CALL processorFunc PASSING THE LIST OF RESULT DATA
+        var result = [];
+  		 db.transaction(function (tx) {
+      		tx.executeSql('SELECT * FROM sessions WHERE sessions.dayid = 1 ORDER BY sessions.starttime ASC', [], function(tx, rs){
+         for(var i=0; i<rs.rows.length; i++) {
+            var row = rs.rows.item(i)
+            result[i] = row;
+         }
+         console.log(result);
+         processorFunc(result);
+      }, errorDB);
+   });
     }
 
     // Called by Controller.js onPageChange method

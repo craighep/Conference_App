@@ -45,23 +45,36 @@ Conference.controller = (function ($, dataContext, document) {
         }
     };
 
-    var renderSessionsList = function (sessionsList) {
-        // This is where you do the work to build the HTML ul list
-        // based on the data you've received from DataContext.js (it
-        // calls this method with the list of data)
-        // Here are some things you need to do:
-        // o Obtain a reference to #sessions-list-content element
-        // o If the sessionsList is empty append a div with an error message to the page
-        // o Create the <ul> element using jQuery commands and append to the sessions section
-        // o Loop through the sessionsList data building up an appropriate set of <li>
-        // elements. See how we do this in the worksheet version that hard-codes the
-        // session data in index.html
-        // o Append the list items to the <ul> element created earlier. Hint: building
-        // up an array and then converting to a string with join before appending
-        // would help.
-        // o You will need to refresh JQM by calling listview function
-        // **ENTER CODE HERE**
-
+    var renderSessionsList = function(sessionsList) {
+        console.log("called session list");
+        console.log(sessionsList);
+        var sessionListElement = $('#sessions-list-content');
+        var sessionListHtml = "";
+        if (sessionsList.length == 0) {
+            sessionListHtml.append("<div>No sessions available!</div>");
+            return;
+        }
+        sessionListHtml += '<ul data-role="listview" data-filter="true" data-input="#myFilter">\n';
+        var innerElements = [];
+        for (var i = 0; i < sessionsList.length; i++) {
+            var session = sessionsList[i];
+            var html = "";
+            html += '<li><a href="">\n';
+            html += '<div class="session-list-item">\n';
+            html += '<h3>' + session["title"] + '</h3>\n';
+            html += '<div>\n<h6>' + session["type"] + '</h6>\n';
+            html += '<h6>' + session["starttime"] + ' - ' + session["endtime"] + '</h6>\n';
+            html += '</div>\n</div>\n</a></li>';
+            innerElements.push(html);
+        }
+        sessionListHtml += innerElements.join("\n");
+        sessionListHtml += '</ul>';
+        sessionListElement.append(sessionListHtml);
+        if (sessionListElement.hasClass('ui-listview')) {
+            sessionListElement.listview('refresh');
+        } else {
+            sessionListElement.trigger('create');
+        }
     };
 
     var noDataDisplay = function (event, data) {
