@@ -69,7 +69,7 @@ Conference.controller = (function ($, dataContext, document) {
         }
         sessionListHtml += innerElements.join("\n");
         sessionListHtml += '</ul>';
-        sessionListElement.append(sessionListHtml);
+        sessionListElement.html(sessionListHtml);
         if (sessionListElement.hasClass('ui-listview')) {
             sessionListElement.listview('refresh');
         } else {

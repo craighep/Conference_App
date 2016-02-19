@@ -195,7 +195,7 @@ Conference.dataContext = (function ($) {
             return false;
         }
         db = window.openDatabase(DATABASE_NAME, "", "Conference App", 200000);
-
+        console.log(db.version);
         // If the version is empty then we know it's the first create so set the version
         // and populate
         if (db.version.length == 0) {
