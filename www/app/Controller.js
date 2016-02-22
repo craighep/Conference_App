@@ -191,11 +191,27 @@ Conference.controller = (function ($, dataContext, document) {
 
         $('#map-img').remove();
 
-        jQuery('<img/>', {
-            id: 'map-img',
-            src: image_url,
-            title: 'Google map of my location'
-        }).appendTo('#mapPos');
+        var myLatLng = {lat: -25.363, lng: 131.044};
+        console.log("myLatLng");
+
+  var map = new google.maps.Map(document.getElementById('mapPos'), {
+    zoom: 4,
+    center: myLatLng
+  });
+
+  var marker = new google.maps.Marker({
+    position: myLatLng,
+    map: map,
+    title: 'Hello World!'
+  });
+
+  $('#mapPos').append("hey");
+
+        // jQuery('<img/>', {
+        //     id: 'map-img',
+        //     src: image_url,
+        //     title: 'Google map of my location'
+        // }).appendTo('#mapPos');
 
         mapDisplayed = true;
     };
