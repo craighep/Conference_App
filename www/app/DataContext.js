@@ -9,45 +9,62 @@ Conference.dataContext = (function ($) {
     // Use OLD_DATABASE_VERSION when upgrading databases. It indicates
     // the version we can upgrade from. Anything older and we tell the user
     // there's a problem
-    var OLD_DATABASE_VERSION = "0";
+    var OLD_DATABASE_VERSION = "1.0";
     // The current database version supported by this script
-    var DATABASE_VERSION = "1.0";
+    var DATABASE_VERSION = "2";
+
+    var clearDB = function (tx) {
+    	console.log("dropping");
+    	tx.executeSql('DROP TABLE days'), [], createSuccess, errorDB;
+    	tx.executeSql('DROP TABLE talks'), [], createSuccess, errorDB;
+    	tx.executeSql('DROP TABLE venues'), [], createSuccess, errorDB;
+    	tx.executeSql('DROP TABLE sessions'), [], createSuccess, errorDB;
+		tx.executeSql('DROP TABLE events'), [], createSuccess, errorDB;
+    }
 
     var populateDB = function (tx) {
-
         // There is much more here than we need for the assignment. We only need sessions and days
         // but it allows for future expansion
         tx.executeSql('CREATE TABLE days (_id INTEGER PRIMARY KEY AUTOINCREMENT, day TEXT NOT NULL, date TEXT)', [], createSuccess, errorDB);
         tx.executeSql('CREATE TABLE talks (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, speaker TEXT, image TEXT, description TEXT, notes TEXT, eventid INTEGER NOT NULL)', [], createSuccess, errorDB);
         tx.executeSql('CREATE TABLE venues (_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, latitude TEXT, longitude TEXT)', [], createSuccess, errorDB);
-        tx.executeSql('CREATE TABLE sessions (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, starttime TEXT, endtime TEXT, type TEXT, dayid INTEGER NOT NULL)', [], createSuccess, errorDB);
+        tx.executeSql('CREATE TABLE sessions (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, starttime TEXT, endtime TEXT, type TEXT, dayid INTEGER NOT NULL, locationid INTEGER NOT NULL)', [], createSuccess, errorDB);
         tx.executeSql('CREATE TABLE events (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, venueid INTEGER NOT NULL, sessionid INTEGER NOT NULL)', [], createSuccess, errorDB);
+        tx.executeSql('CREATE TABLE locations (_id INTEGER PRIMARY KEY AUTOINCREMENT, longitude DOUBLE, latitude DOUBLE)', [], createSuccess, errorDB);
+
+        tx.executeSql('insert into locations (_id, longitude, latitude) values (1,	52.417422, -4.064364)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into locations (_id, longitude, latitude) values (2,	52.415446, -4.062905)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into locations (_id, longitude, latitude) values (3,	52.417789, -4.064987)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into locations (_id, longitude, latitude) values (4,	52.416297, -4.065416)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into locations (_id, longitude, latitude) values (5,	52.416702, -4.065888)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into locations (_id, longitude, latitude) values (6,	52.416807, -4.064043)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into locations (_id, longitude, latitude) values (7,	52.416009, -4.062583)', [], insertSuccess, errorDB);
 
         tx.executeSql('insert into days (_id, day, date) values (1,	\'Wednesday\', \'8th Sept\')', [], insertSuccess, errorDB);
         tx.executeSql('insert into days (_id, day, date) values (2,	\'Thursday\',	\'9th Sept\' )', [], insertSuccess, errorDB);
         tx.executeSql('insert into days (_id, day, date) values (3,	\'Friday\',	\'10th Sept\' )', [], insertSuccess, errorDB);
 
-        tx.executeSql('insert into sessions (_id, title, startTime, endtime, type, dayId) values (1,  \'OPENING CEREMONY\',     \'09:00\', \'09:30\', \'Social\',        1)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (2,  \'Keynote Address\',      \'09:30\', \'10:30\',        \'Keynote\',       1)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (3,  \'COFFEE BREAK\', \'10:30\',        \'11:00\',        \'Social\',        1)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (4,  \'TECHNICAL SESSIONS\',   \'11:00\',        \'12:30\',        \'Technical\',     1)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (5,  \'LUNCH\',        \'12:30\',        \'14:00\',        \'Social\',        1)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (6,  \'TECHNICAL SESSIONS\',   \'14:00\',        \'15:30\',        \'Technical\',     1)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (7,  \'TEA BREAK\',    \'15:30\',        \'16:00\',        \'Social\',        1)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (8,  \'TECHNICAL SESSIONS\',   \'16:00\',        \'17:30\',        \'Technical\',     1)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (9,  \'Computers and Thought Award Lecture\',  \'18:00\',        \'19:00\',        \'Technical\',     1)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (10, \'Invited Speaker\',      \'09:00\', \'10:30\',        \'Keynote\',       2)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (11, \'COFFEE BREAK\', \'10:30\',        \'11:00\',        \'Social\',        2)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (12, \'TECHNICAL SESSIONS\',   \'11:00\',        \'12:30\',        \'Technical\',     2)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (13, \'LUNCH\',        \'12:30\',        \'14:00\',        \'Social\',        2)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (14, \'TECHNICAL SESSIONS\',   \'14:00\',        \'15:30\',        \'Technical\',     2)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (15, \'TEA BREAK\',    \'15:30\',        \'16:00\',        \'Social\',        2)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (16, \'TECHNICAL SESSIONS\',   \'16:00\',        \'17:30\',        \'Technical\',     2)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (17, \'CONFERENCE BANQUET\',   \'19:00\',        \'22:00\',        \'Social\',        2)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (18, \'Invited Talk\', \'09:00\', \'10:30\',        \'Keynote\',       3)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (19, \'COFFEE BREAK\', \'10:30\',        \'11:00\',        \'Social\',        3)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (20, \'TECHNICAL SESSIONS\',   \'11:00\',        \'12:30\',        \'Technical\',     3)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId) values (21, \'CLOSING CEREMONY\',     \'12:30\',        \'13:00\',        \'Social\',        3)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into sessions (_id, title, startTime, endtime, type, dayId, locationid) values (1,  \'OPENING CEREMONY\',     \'09:00\', \'09:30\', \'Social\',        1, 1)', [], insertSuccess, errorDB); 
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (2,  \'Keynote Address\',      \'09:30\', \'10:30\',        \'Keynote\',       1, 2)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (3,  \'COFFEE BREAK\', \'10:30\',        \'11:00\',        \'Social\',        1, 3)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (4,  \'TECHNICAL SESSIONS\',   \'11:00\',        \'12:30\',        \'Technical\',     1, 4)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (5,  \'LUNCH\',        \'12:30\',        \'14:00\',        \'Social\',        1, 3)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (6,  \'TECHNICAL SESSIONS\',   \'14:00\',        \'15:30\',        \'Technical\',     1, 4)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (7,  \'TEA BREAK\',    \'15:30\',        \'16:00\',        \'Social\',        1, 3)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (8,  \'TECHNICAL SESSIONS\',   \'16:00\',        \'17:30\',        \'Technical\',     1, 4)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (9,  \'Computers and Thought Award Lecture\',  \'18:00\',        \'19:00\',        \'Technical\',     1, 6)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (10, \'Invited Speaker\',      \'09:00\', \'10:30\',        \'Keynote\',       2, 5)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (11, \'COFFEE BREAK\', \'10:30\',        \'11:00\',        \'Social\',        2, 3)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (12, \'TECHNICAL SESSIONS\',   \'11:00\',        \'12:30\',        \'Technical\',     2, 4)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (13, \'LUNCH\',        \'12:30\',        \'14:00\',        \'Social\',        2, 3)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (14, \'TECHNICAL SESSIONS\',   \'14:00\',        \'15:30\',        \'Technical\',     2, 4)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (15, \'TEA BREAK\',    \'15:30\',        \'16:00\',        \'Social\',        2, 3)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (16, \'TECHNICAL SESSIONS\',   \'16:00\',        \'17:30\',        \'Technical\',     2, 4)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (17, \'CONFERENCE BANQUET\',   \'19:00\',        \'22:00\',        \'Social\',        2, 3)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (18, \'Invited Talk\', \'09:00\', \'10:30\',        \'Keynote\',       3, 5)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (19, \'COFFEE BREAK\', \'10:30\',        \'11:00\',        \'Social\',        3, 3)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (20, \'TECHNICAL SESSIONS\',   \'11:00\',        \'12:30\',        \'Technical\',     3, 4)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (21, \'CLOSING CEREMONY\',     \'12:30\',        \'13:00\',        \'Social\',        3, 7)', [], insertSuccess, errorDB);
 
         tx.executeSql('insert into	events (_id, title, venueId, sessionId) values (1,    \'Computer Mediated Transactions\',       1,      2)', [], insertSuccess, errorDB);
         tx.executeSql('insert into	events (_id, title, venueId, sessionId) values (2,    \'Cognitive and Philosophical Foundations\',      2,      4)', [], insertSuccess, errorDB);
@@ -167,15 +184,15 @@ Conference.dataContext = (function ($) {
     }
 
     var createSuccess = function (tx, results) {
-        console.log("Created table");
+     //   console.log("Created table");
     }
 
     var insertSuccess = function (tx, results) {
-        console.log("Insert ID = " + results.insertId);
+     //   console.log("Insert ID = " + results.insertId);
     }
 
     var selectSuccess = function (tx, results) {
-        console.log("Selected");
+    //    console.log("Selected");
     }
 
     var successPopulate = function () {
@@ -203,8 +220,10 @@ Conference.dataContext = (function ($) {
             db.transaction(populateDB, errorDB, successPopulate);
         }
         else if (db.version == OLD_DATABASE_VERSION) {
-            // We can upgrade but in this example we don't!
-            alert("upgrading database");
+        	db.changeVersion(db.version, DATABASE_VERSION);
+        	db.transaction(clearDB, errorDB, successPopulate);
+        	db.transaction(populateDB, errorDB, successPopulate);
+            console.log("upgrading database");
         }
         else if (db.version != DATABASE_VERSION) {
             // Trouble. They have a version of the database we
@@ -220,24 +239,17 @@ Conference.dataContext = (function ($) {
         return initialise_database();
     };
 
-
     var querySessions = function (tx) {
-        // For the moment we just deal with the first day
-        // SELECT * FROM sessions WHERE sessions.dayid = '1' ORDER BY sessions.starttime ASC
-
-        // **ENTER CODE HERE** TO EXECUTE SQL AND DEAL WITH ANY ERRORS
-        // ON SUCCESS YOU SHOULD CALL processorFunc PASSING THE LIST OF RESULT DATA
         var result = [];
-  		 db.transaction(function (tx) {
-      		tx.executeSql('SELECT * FROM sessions WHERE sessions.dayid = 1 ORDER BY sessions.starttime ASC', [], function(tx, rs){
-         for(var i=0; i<rs.rows.length; i++) {
-            var row = rs.rows.item(i)
-            result[i] = row;
-         }
-         console.log(result);
-         processorFunc(result);
-      }, errorDB);
-   });
+  		db.transaction(function (tx) {
+      	 	tx.executeSql('SELECT * FROM sessions INNER JOIN locations ON sessions.locationid=locations._id WHERE sessions.dayid = 1 ORDER BY sessions.starttime ASC', [], function(tx, rs){
+         		for(var i=0; i<rs.rows.length; i++) {
+            		var row = rs.rows.item(i);
+            		result[i] = row;
+         		}
+         		processorFunc(result);
+      		}, errorDB);
+   		});
     }
 
     // Called by Controller.js onPageChange method

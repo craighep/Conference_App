@@ -8,6 +8,7 @@ Conference.controller = (function ($, dataContext, document) {
     var currentMapWidth = 0;
     var currentMapHeight = 0;
     var sessionsListSelector = "#sessions-list-content";
+    var sessionsList = [];
     var noSessionsCachedMsg = "<div>Your sessions list is empty.</div>";
     var databaseNotInitialisedMsg = "<div>Your browser does not support local databases.</div>";
 
@@ -34,26 +35,34 @@ Conference.controller = (function ($, dataContext, document) {
         // with new dimensions
         switch (toPageId) {
             case SESSIONS_LIST_PAGE_ID:
-                dataContext.processSessionsList(renderSessionsList);
+                dataContext.processSessionsList(saveSessionList);
+                renderSessionsList();
                 break;
             case MAP_PAGE:
                 if (!mapDisplayed || (currentMapWidth != get_map_width() ||
                     currentMapHeight != get_map_height())) {
+                    dataContext.processSessionsList(saveSessionList);
                     deal_with_geolocation();
                 }
                 break;
         }
     };
 
-    var renderSessionsList = function(sessionsList) {
-        console.log("called session list");
-        console.log(sessionsList);
+    var saveSessionList = function(sessions) {
+        if(sessions != null)
+                sessionsList = sessions;
+    }
+
+    function renderSessionsList() {
         var sessionListElement = $('#sessions-list-content');
         var sessionListHtml = "";
         if (sessionsList.length == 0) {
-            sessionListHtml.append("<div>No sessions available!</div>");
+            sessionListElement.append("<div>No sessions available!</div>");
             return;
         }
+        sessionListHtml += '<form class="ui-filterable">';
+        sessionListHtml +=  '<input id="myFilter" data-type="search" placeholder="Search for sessions..">';
+        sessionListHtml += '</form>';
         sessionListHtml += '<ul data-role="listview" data-filter="true" data-input="#myFilter">\n';
         var innerElements = [];
         for (var i = 0; i < sessionsList.length; i++) {
@@ -96,7 +105,7 @@ Conference.controller = (function ($, dataContext, document) {
         });
     };
 
-    var deal_with_geolocation = function () {
+    var deal_with_geolocation = function() {
         var phoneGapApp = (document.URL.indexOf('http://') === -1 && document.URL.indexOf('https://') === -1 );
         if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry)/)) {
             // Running on a mobile. Will have to add to this list for other mobiles.
@@ -117,7 +126,6 @@ Conference.controller = (function ($, dataContext, document) {
     };
 
     var initiate_geolocation = function () {
-
         // Do we have built-in support for geolocation (either native browser or phonegap)?
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(handle_geolocation_query, handle_errors);
@@ -179,40 +187,41 @@ Conference.controller = (function ($, dataContext, document) {
     }
 
     var handle_geolocation_query = function (pos) {
-        position = pos;
 
         var the_height = get_map_height();
         var the_width = get_map_width();
+        $('#mapPos').css("height",the_height+"px");
+        var locations = [];
 
-        var image_url = "http://maps.google.com/maps/api/staticmap?sensor=false&center=" + position.coords.latitude + "," +
-            position.coords.longitude + "&zoom=14&size=" +
-            the_width + "x" + the_height + "&markers=color:blue|label:S|" +
-            position.coords.latitude + ',' + position.coords.longitude;
+            console.log(sessionsList);
+        for(var i=0;i<sessionsList.length;i++){
+            locations[i] = [sessionsList[i]["title"], sessionsList[i]["longitude"], sessionsList[i]["latitude"], i+1];
+        }
+        console.log(locations);
 
-        $('#map-img').remove();
+    var map = new google.maps.Map(document.getElementById('mapPos'), {
+      zoom: 16,
+      center: new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude)
+    });
 
-        var myLatLng = {lat: -25.363, lng: 131.044};
-        console.log("myLatLng");
+    var infowindow = new google.maps.InfoWindow();
 
-  var map = new google.maps.Map(document.getElementById('mapPos'), {
-    zoom: 4,
-    center: myLatLng
-  });
+    var marker, i;
 
-  var marker = new google.maps.Marker({
-    position: myLatLng,
-    map: map,
-    title: 'Hello World!'
-  });
+    for (i = 0; i < locations.length; i++) {  
+      marker = new google.maps.Marker({
+        position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+        map: map,
+        label: ""+i
+      });
 
-  $('#mapPos').append("hey");
-
-        // jQuery('<img/>', {
-        //     id: 'map-img',
-        //     src: image_url,
-        //     title: 'Google map of my location'
-        // }).appendTo('#mapPos');
-
+      google.maps.event.addListener(marker, 'click', (function(marker, i) {
+        return function() {
+          infowindow.setContent(locations[i][0]);
+          infowindow.open(map, marker);
+        }
+      })(marker, i));
+    }
         mapDisplayed = true;
     };
 

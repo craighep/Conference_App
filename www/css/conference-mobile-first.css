@@ -142,3 +142,8 @@ List formatting
     float: right;
     width: 30%;
 }
+
+#mapPos{
+    height: 300px;
+    width:100%;
+}
