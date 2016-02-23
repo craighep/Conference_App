@@ -222,6 +222,15 @@ Conference.controller = (function ($, dataContext, document) {
         }
       })(marker, i));
     }
+    // Finally, add marker for user current location
+        marker = new google.maps.Marker({
+        position: new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude),
+        map: map,
+        label: ""
+      });
+        // Add custom icon for user location to differenciate from others
+        marker.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png')
+
         mapDisplayed = true;
     };
 
