@@ -36,7 +36,7 @@ Conference.controller = (function ($, dataContext, document) {
         switch (toPageId) {
             case SESSIONS_LIST_PAGE_ID:
                 dataContext.processSessionsList(saveSessionList);
-                renderSessionsList();
+                setTimeout(function(){ renderSessionsList(); }, 400); // Timeout required because HTML is updated too quickly
                 break;
             case MAP_PAGE:
                 if (!mapDisplayed || (currentMapWidth != get_map_width() ||
@@ -50,7 +50,7 @@ Conference.controller = (function ($, dataContext, document) {
 
     var saveSessionList = function(sessions) {
         if(sessions != null)
-                sessionsList = sessions;
+            sessionsList = sessions;
     }
 
     function renderSessionsList() {
@@ -70,7 +70,7 @@ Conference.controller = (function ($, dataContext, document) {
             var html = "";
             html += '<li><a href="">\n';
             html += '<div class="session-list-item">\n';
-            html += '<h3>' + session["title"] + '</h3>\n';
+            html += '<h3>' + session["title"] + '</h3><i>Map pin: '+session["locationid"]+'</i>\n';
             html += '<div>\n<h6>' + session["type"] + '</h6>\n';
             html += '<h6>' + session["starttime"] + ' - ' + session["endtime"] + '</h6>\n';
             html += '</div>\n</div>\n</a></li>';
@@ -192,35 +192,35 @@ Conference.controller = (function ($, dataContext, document) {
         var the_width = get_map_width();
         $('#mapPos').css("height",the_height+"px");
         var locations = [];
-
-            console.log(sessionsList);
         for(var i=0;i<sessionsList.length;i++){
-            locations[i] = [sessionsList[i]["title"], sessionsList[i]["longitude"], sessionsList[i]["latitude"], i+1];
+            // Use same marker if already an event is at that location
+            if(!locationHasEvent(locations, sessionsList[i])){
+                locations.push([sessionsList[i]["title"], sessionsList[i]["longitude"], sessionsList[i]["latitude"], sessionsList[i]["locationid"]]);
+            }
         }
-        console.log(locations);
 
-    var map = new google.maps.Map(document.getElementById('mapPos'), {
-      zoom: 16,
-      center: new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude)
-    });
+        var map = new google.maps.Map(document.getElementById('mapPos'), {
+          zoom: 16,
+          center: new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude)
+        });
 
-    var infowindow = new google.maps.InfoWindow();
+        var infowindow = new google.maps.InfoWindow();
 
-    var marker, i;
+        var marker, i;
 
-    for (i = 0; i < locations.length; i++) {  
-      marker = new google.maps.Marker({
-        position: new google.maps.LatLng(locations[i][1], locations[i][2]),
-        map: map,
-        label: ""+i
-      });
+        for (i = 0; i < locations.length; i++) {  
+            marker = new google.maps.Marker({
+            position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+            map: map,
+            label: ""+locations[i][3]
+          });
 
-      google.maps.event.addListener(marker, 'click', (function(marker, i) {
-        return function() {
-          infowindow.setContent(locations[i][0]);
-          infowindow.open(map, marker);
-        }
-      })(marker, i));
+        google.maps.event.addListener(marker, 'click', (function(marker, i) {
+            return function() {
+              infowindow.setContent(locations[i][0]);
+              infowindow.open(map, marker);
+            }
+        })(marker, i));
     }
     // Finally, add marker for user current location
         marker = new google.maps.Marker({
@@ -251,6 +251,16 @@ Conference.controller = (function ($, dataContext, document) {
         // to be called.
         d.on('pageinit', $(document), initialisePage);
     };
+
+    function locationHasEvent(locations, session){
+        for (var i = 0; i < locations.length; i++) {  
+            if(locations[i][1] == session["longitude"] &&
+                locations[i][2] == session["latitude"]){
+                return true;
+            }
+        }
+        return false;
+    }
 
 
     // Provides a hash of functions that we return to external code so that they

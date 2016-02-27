@@ -9,9 +9,9 @@ Conference.dataContext = (function ($) {
     // Use OLD_DATABASE_VERSION when upgrading databases. It indicates
     // the version we can upgrade from. Anything older and we tell the user
     // there's a problem
-    var OLD_DATABASE_VERSION = "1.0";
+    var OLD_DATABASE_VERSION = "2";
     // The current database version supported by this script
-    var DATABASE_VERSION = "2";
+    var DATABASE_VERSION = "3";
 
     var clearDB = function (tx) {
     	console.log("dropping");
@@ -48,11 +48,11 @@ Conference.dataContext = (function ($) {
         tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (2,  \'Keynote Address\',      \'09:30\', \'10:30\',        \'Keynote\',       1, 2)', [], insertSuccess, errorDB);
         tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (3,  \'COFFEE BREAK\', \'10:30\',        \'11:00\',        \'Social\',        1, 3)', [], insertSuccess, errorDB);
         tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (4,  \'TECHNICAL SESSIONS\',   \'11:00\',        \'12:30\',        \'Technical\',     1, 4)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (5,  \'LUNCH\',        \'12:30\',        \'14:00\',        \'Social\',        1, 3)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (5,  \'LUNCH\',        \'12:30\',        \'14:00\',        \'Social\',        1, 5)', [], insertSuccess, errorDB);
         tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (6,  \'TECHNICAL SESSIONS\',   \'14:00\',        \'15:30\',        \'Technical\',     1, 4)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (7,  \'TEA BREAK\',    \'15:30\',        \'16:00\',        \'Social\',        1, 3)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (7,  \'TEA BREAK\',    \'15:30\',        \'16:00\',        \'Social\',        1, 6)', [], insertSuccess, errorDB);
         tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (8,  \'TECHNICAL SESSIONS\',   \'16:00\',        \'17:30\',        \'Technical\',     1, 4)', [], insertSuccess, errorDB);
-        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (9,  \'Computers and Thought Award Lecture\',  \'18:00\',        \'19:00\',        \'Technical\',     1, 6)', [], insertSuccess, errorDB);
+        tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (9,  \'Computers and Thought Award Lecture\',  \'18:00\',        \'19:00\',        \'Technical\',     1, 7)', [], insertSuccess, errorDB);
         tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (10, \'Invited Speaker\',      \'09:00\', \'10:30\',        \'Keynote\',       2, 5)', [], insertSuccess, errorDB);
         tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (11, \'COFFEE BREAK\', \'10:30\',        \'11:00\',        \'Social\',        2, 3)', [], insertSuccess, errorDB);
         tx.executeSql('insert into	sessions (_id, title, startTime, endtime, type, dayId, locationid) values (12, \'TECHNICAL SESSIONS\',   \'11:00\',        \'12:30\',        \'Technical\',     2, 4)', [], insertSuccess, errorDB);
@@ -212,7 +212,6 @@ Conference.dataContext = (function ($) {
             return false;
         }
         db = window.openDatabase(DATABASE_NAME, "", "Conference App", 200000);
-        console.log(db.version);
         // If the version is empty then we know it's the first create so set the version
         // and populate
         if (db.version.length == 0) {
@@ -228,7 +227,10 @@ Conference.dataContext = (function ($) {
         else if (db.version != DATABASE_VERSION) {
             // Trouble. They have a version of the database we
             // cannot upgrade from
-            alert("incompatible database version");
+            db.changeVersion(db.version, DATABASE_VERSION);
+            db.transaction(clearDB, errorDB, successPopulate);
+            db.transaction(populateDB, errorDB, successPopulate);
+            alert("incompatible database version, bringing up to date");
             return false;
         }
 
