@@ -13,6 +13,7 @@ Conference.dataContext = (function ($) {
     // The current database version supported by this script
     var DATABASE_VERSION = "3";
 
+    // When the user DB is out of sync or date, drop tables to start from fresh. Required in order to add new locations table
     var clearDB = function (tx) {
     	console.log("dropping");
     	tx.executeSql('DROP TABLE days'), [], createSuccess, errorDB;
@@ -184,15 +185,15 @@ Conference.dataContext = (function ($) {
     }
 
     var createSuccess = function (tx, results) {
-     //   console.log("Created table");
+        console.log("Created table");
     }
 
     var insertSuccess = function (tx, results) {
-     //   console.log("Insert ID = " + results.insertId);
+        console.log("Insert ID = " + results.insertId);
     }
 
     var selectSuccess = function (tx, results) {
-    //    console.log("Selected");
+        console.log("Selected");
     }
 
     var successPopulate = function () {
@@ -218,7 +219,7 @@ Conference.dataContext = (function ($) {
             db.changeVersion("", DATABASE_VERSION);
             db.transaction(populateDB, errorDB, successPopulate);
         }
-        else if (db.version == OLD_DATABASE_VERSION) {
+        else if (db.version == OLD_DATABASE_VERSION) { // Drop tables, and repoulate to get the DB back in sync
         	db.changeVersion(db.version, DATABASE_VERSION);
         	db.transaction(clearDB, errorDB, successPopulate);
         	db.transaction(populateDB, errorDB, successPopulate);
@@ -226,7 +227,7 @@ Conference.dataContext = (function ($) {
         }
         else if (db.version != DATABASE_VERSION) {
             // Trouble. They have a version of the database we
-            // cannot upgrade from
+            // cannot upgrade from- Do as above else if.
             db.changeVersion(db.version, DATABASE_VERSION);
             db.transaction(clearDB, errorDB, successPopulate);
             db.transaction(populateDB, errorDB, successPopulate);
@@ -243,9 +244,11 @@ Conference.dataContext = (function ($) {
 
     var querySessions = function (tx) {
         var result = [];
+        // Use a join statement to bring back location information for each session (Locations are stored in a seperate table in order to reduce duplicated data)
   		db.transaction(function (tx) {
       	 	tx.executeSql('SELECT * FROM sessions INNER JOIN locations ON sessions.locationid=locations._id WHERE sessions.dayid = 1 ORDER BY sessions.starttime ASC', [], function(tx, rs){
-         		for(var i=0; i<rs.rows.length; i++) {
+         		// for each one, store in a result array for returning to the Controller
+                for(var i=0; i<rs.rows.length; i++) {
             		var row = rs.rows.item(i);
             		result[i] = row;
          		}

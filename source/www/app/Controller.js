@@ -35,14 +35,14 @@ Conference.controller = (function ($, dataContext, document) {
         // with new dimensions
         switch (toPageId) {
             case SESSIONS_LIST_PAGE_ID:
-                dataContext.processSessionsList(saveSessionList);
+                dataContext.processSessionsList(saveSessionList); // update list on each change of page
                 setTimeout(function(){ renderSessionsList(); }, 400); // Timeout required because HTML is updated too quickly
                 break;
             case MAP_PAGE:
                 if (!mapDisplayed || (currentMapWidth != get_map_width() ||
                     currentMapHeight != get_map_height())) {
                     dataContext.processSessionsList(saveSessionList);
-                    deal_with_geolocation();
+                    deal_with_geolocation(); // update map with user position and session locations
                 }
                 break;
         }
@@ -57,15 +57,15 @@ Conference.controller = (function ($, dataContext, document) {
         var sessionListElement = $('#sessions-list-content');
         var sessionListHtml = "";
         if (sessionsList.length == 0) {
-            sessionListElement.append("<div>No sessions available!</div>");
+            sessionListElement.append("<div>No sessions available!</div>"); // if there are no sessinons tell the user
             return;
         }
         sessionListHtml += '<form class="ui-filterable">';
         sessionListHtml +=  '<input id="myFilter" data-type="search" placeholder="Search for sessions..">';
         sessionListHtml += '</form>';
-        sessionListHtml += '<ul data-role="listview" data-filter="true" data-input="#myFilter">\n';
+        sessionListHtml += '<ul data-role="listview" data-filter="true" data-input="#myFilter">\n'; // Add the search functionality
         var innerElements = [];
-        for (var i = 0; i < sessionsList.length; i++) {
+        for (var i = 0; i < sessionsList.length; i++) { // Loop over each session, keep adding the HTML for each to an array
             var session = sessionsList[i];
             var html = "";
             html += '<li><a href="">\n';
@@ -76,13 +76,13 @@ Conference.controller = (function ($, dataContext, document) {
             html += '</div>\n</div>\n</a></li>';
             innerElements.push(html);
         }
-        sessionListHtml += innerElements.join("\n");
+        sessionListHtml += innerElements.join("\n"); // Append all the session HTML elements to the list HTML variable, seperate with a new line for each 
         sessionListHtml += '</ul>';
-        sessionListElement.html(sessionListHtml);
+        sessionListElement.html(sessionListHtml); // Replace the HTML of the list with newly generated HTML
         if (sessionListElement.hasClass('ui-listview')) {
-            sessionListElement.listview('refresh');
+            sessionListElement.listview('refresh'); // Refresh the list for the seacrh box
         } else {
-            sessionListElement.trigger('create');
+            sessionListElement.trigger('create'); // Let the search know there is now a list
         }
     };
 
@@ -190,16 +190,16 @@ Conference.controller = (function ($, dataContext, document) {
 
         var the_height = get_map_height();
         var the_width = get_map_width();
-        $('#mapPos').css("height",the_height+"px");
+        $('#mapPos').css("height",the_height+"px"); // Make the map container the appropriate size
         var locations = [];
         for(var i=0;i<sessionsList.length;i++){
             // Use same marker if already an event is at that location
             if(!locationHasEvent(locations, sessionsList[i])){
-                locations.push([sessionsList[i]["title"], sessionsList[i]["longitude"], sessionsList[i]["latitude"], sessionsList[i]["locationid"]]);
+                locations.push([sessionsList[i]["title"], sessionsList[i]["longitude"], sessionsList[i]["latitude"], sessionsList[i]["locationid"]]); // Add to a marker array
             }
         }
 
-        var map = new google.maps.Map(document.getElementById('mapPos'), {
+        var map = new google.maps.Map(document.getElementById('mapPos'), { // Create new google map object and append to HTML
           zoom: 16,
           center: new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude)
         });
@@ -208,6 +208,7 @@ Conference.controller = (function ($, dataContext, document) {
 
         var marker, i;
 
+        // Create markers based on unique locations gathered from sessions
         for (i = 0; i < locations.length; i++) {  
             marker = new google.maps.Marker({
             position: new google.maps.LatLng(locations[i][1], locations[i][2]),
@@ -215,6 +216,7 @@ Conference.controller = (function ($, dataContext, document) {
             label: ""+locations[i][3]
           });
 
+            // Add on click functionality for each marker, each showing the title when pressed
         google.maps.event.addListener(marker, 'click', (function(marker, i) {
             return function() {
               infowindow.setContent(locations[i][0]);
@@ -228,7 +230,7 @@ Conference.controller = (function ($, dataContext, document) {
         map: map,
         label: ""
       });
-        // Add custom icon for user location to differenciate from others
+        // Add custom icon for user location to differenciate from others (blue)
         marker.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png')
 
         mapDisplayed = true;
